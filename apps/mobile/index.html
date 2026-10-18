@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Tresno - Video Match & Gifting App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        -webkit-tap-highlight-color: transparent;
+      }
+      body {
+        background: radial-gradient(circle at 50% 20%, #1f1b33 0%, #0a0914 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .phone-frame {
+        width: 100%;
+        max-width: 414px;
+        height: 100vh;
+        max-height: 896px;
+        background-color: #0D0C1D;
+        border-radius: 40px;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 0 8px #2A2740;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transform: translateZ(0); /* Crucial: establishes containing block for position: fixed elements */
+      }
+      .phone-notch {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 140px;
+        height: 25px;
+        background-color: #2A2740;
+        border-bottom-left-radius: 16px;
+        border-bottom-right-radius: 16px;
+        z-index: 99999;
+        pointer-events: none;
+      }
+      #root {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+      }
+      #phone-modal-root {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 9999;
+      }
+      #phone-modal-root > * {
+        pointer-events: auto;
+      }
+      /* Fallback containment: any dialog / portal div attached directly to document.body stays within phone boundaries */
+      body > div:not(.phone-frame) {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) translateZ(0) !important;
+        width: 100% !important;
+        max-width: 414px !important;
+        height: 100vh !important;
+        max-height: 896px !important;
+        border-radius: 40px !important;
+        overflow: hidden !important;
+        pointer-events: none !important;
+        z-index: 99998 !important;
+      }
+      body > div:not(.phone-frame) > * {
+        pointer-events: auto !important;
+      }
+      @media (max-width: 500px) {
+        .phone-frame {
+          max-width: 100%;
+          height: 100vh;
+          max-height: 100vh;
+          border-radius: 0;
+          box-shadow: none;
+          transform: none;
+        }
+        .phone-notch {
+          display: none;
+        }
+        body > div:not(.phone-frame) {
+          max-width: 100% !important;
+          max-height: 100vh !important;
+          border-radius: 0 !important;
+          top: 0 !important;
+          left: 0 !important;
+          transform: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div id="root"></div>
+      <div id="phone-modal-root"></div>
+    </div>
+    <script type="module" src="/src/main.web.tsx"></script>
+  </body>
+</html>

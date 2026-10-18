@@ -1,0 +1,30 @@
+{
+  "name": "@tresno/server",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "NODE_ENV=development tsx watch src/index.ts",
+    "dev:prod": "NODE_ENV=production tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "NODE_ENV=production node dist/index.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.1",
+    "@fastify/websocket": "^11.0.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "@tresno/shared": "workspace:*",
+    "agora-token": "^2.0.3",
+    "dotenv": "^16.4.5",
+    "fastify": "^5.0.0",
+    "ioredis": "^5.4.1",
+    "ws": "^8.22.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "@types/ws": "^8.18.2",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
+  }
+}

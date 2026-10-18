@@ -1,0 +1,18 @@
+/**
+ * Result Monad Pattern (ala WorkWise & Functional Architecture)
+ * Mengeliminasi unhandled throw exception di komponen UI dan menyederhanakan error handling.
+ */
+
+export type Result<T, E = Error> =
+  | { readonly success: true; readonly data: T }
+  | { readonly success: false; readonly error: E };
+
+export const ok = <T>(data: T): Result<T, never> => ({
+  success: true,
+  data,
+});
+
+export const err = <E>(error: E): Result<never, E> => ({
+  success: false,
+  error,
+});

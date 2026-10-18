@@ -1,0 +1,10 @@
+node_modules
+.turbo
+dist
+.git
+.gitignore
+*.log
+.DS_Store
+scratch
+.env.*.local
+.env.local

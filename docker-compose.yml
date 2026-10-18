@@ -1,0 +1,70 @@
+services:
+  # 1. FASTIFY BACKEND SERVER & WEBSOCKET
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    container_name: tresno-server
+    restart: unless-stopped
+    env_file:
+      - apps/server/.env.production
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - HOST=0.0.0.0
+      - REDIS_URL=redis://:tresno_secret_redis_pass@redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - tresno-network
+
+  # 2. FRONTEND CLIENT (REACT NATIVE WEB / VITE SPA)
+  web:
+    build:
+      context: .
+      dockerfile: apps/mobile/Dockerfile
+    container_name: tresno-web
+    restart: unless-stopped
+    networks:
+      - tresno-network
+
+  # 3. HIGH PERFORMANCE IN-MEMORY MATCHMAKING QUEUE (REDIS)
+  redis:
+    image: redis:7-alpine
+    container_name: tresno-redis
+    restart: unless-stopped
+    command: redis-server --requirepass tresno_secret_redis_pass --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "tresno_secret_redis_pass", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tresno-network
+
+  # 4. NGINX REVERSE PROXY & GATEWAY (ROUTER FOR PORTS 80 & 443)
+  gateway:
+    image: nginx:alpine
+    container_name: tresno-gateway
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - server
+      - web
+    networks:
+      - tresno-network
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  tresno-network:
+    driver: bridge

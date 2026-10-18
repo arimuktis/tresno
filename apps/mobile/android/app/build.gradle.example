@@ -1,0 +1,68 @@
+// ============================================================================
+// CONTOH KONFIGURASI PROGUARD / R8 PADA android/app/build.gradle
+// ============================================================================
+
+apply plugin: "com.android.application"
+apply plugin: "org.jetbrains.kotlin.android"
+apply plugin: "com.facebook.react"
+
+/**
+ * Konfigurasi React Native untuk Hermes & Bundle
+ */
+react {
+    /* Hermes enabled untuk kompilasi JS ke Bytecode (.hbc) */
+    enableHermes = true
+}
+
+def enableProguardInReleaseBuilds = true
+
+android {
+    ndkVersion rootProject.ext.ndkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdk rootProject.ext.compileSdkVersion
+
+    namespace "id.tresno.app"
+    defaultConfig {
+        applicationId "id.tresno.app"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0.0"
+    }
+
+    signingConfigs {
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+        release {
+            if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
+                storeFile file(MYAPP_UPLOAD_STORE_FILE)
+                storePassword MYAPP_UPLOAD_STORE_PASSWORD
+                keyAlias MYAPP_UPLOAD_KEY_ALIAS
+                keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        release {
+            // Pasang signingConfig rilis Anda
+            signingConfig signingConfigs.debug
+
+            // AKTIFKAN OBFUSKASI PROGUARD / R8
+            minifyEnabled enableProguardInReleaseBuilds
+
+            // PEMBERSIHAN RESOURCE TAK TERPAKAI
+            shrinkResources enableProguardInReleaseBuilds
+
+            // ATURAN PROGUARD
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+    }
+}
