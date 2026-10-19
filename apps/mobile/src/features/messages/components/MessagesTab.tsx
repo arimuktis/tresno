@@ -9,6 +9,7 @@ import { useAuthStore } from '../../auth/stores/useAuthStore';
 import { useWalletStore } from '../../wallet/stores/useWalletStore';
 import { toast } from '../../../shared/stores/useToastStore';
 import { FilterChipBar, FilterItem } from '../../../shared/components/molecules/FilterChipBar';
+import { PullToRefreshScrollView } from '../../../shared/components/molecules/PullToRefreshScrollView';
 import { MessageItemRow, MessageRowData } from '../../../shared/components/organisms/MessageItemRow';
 import { Avatar } from '../../../shared/components/atoms/Avatar';
 
@@ -125,19 +126,12 @@ export const MessagesTab: React.FC = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <ScrollView
+      <PullToRefreshScrollView
         style={[styles.container, { backgroundColor: colors.background }]}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={handlePullRefresh}
-            colors={[colors.primary, '#FF2E63']}
-            tintColor={colors.primary}
-            progressBackgroundColor={colors.surfaceCard}
-          />
-        }
+        refreshing={isRefreshing}
+        onRefresh={handlePullRefresh}
       >
         {/* Header Halaman */}
         <View style={styles.header}>
@@ -229,7 +223,7 @@ export const MessagesTab: React.FC = () => {
             </View>
           )}
         </View>
-      </ScrollView>
+      </PullToRefreshScrollView>
 
       {/* Modal Aksi Kelola Obrolan & Pin (Long Press Bottom Sheet) */}
       <Modal

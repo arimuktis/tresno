@@ -19,4 +19,5 @@ export * from './SelectDropdown';
 export * from './DatePickerModal';
 export * from './PhotoPicker';
 export * from './LegalModal';
+export * from './PullToRefreshScrollView';
 export * from '../atoms/ShimmerLoadingBar';

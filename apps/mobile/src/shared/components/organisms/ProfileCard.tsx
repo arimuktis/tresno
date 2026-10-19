@@ -26,6 +26,12 @@ interface ProfileCardProps {
 
 import { getGlassCardStyle } from '../../../theme/glassStyles';
 
+import { useAuthStore } from '../../../features/auth/stores/useAuthStore';
+import { useSocialStore } from '../../../features/social/stores/useSocialStore';
+import { useWalletStore } from '../../../features/wallet/stores/useWalletStore';
+import { LevelBadge } from '../atoms/LevelBadge';
+import { VerifiedBadge } from '../atoms/VerifiedBadge';
+
 export const ProfileCard: React.FC<ProfileCardProps> = ({
   userId,
   nickname,
@@ -44,6 +50,11 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   const { colors, isDark } = useThemeStore();
   const glassStyle = getGlassCardStyle(colors, isDark);
   const [copied, setCopied] = useState(false);
+
+  const { openMyProfilePreview } = useAuthStore();
+  const { openVisitorsModal } = useSocialStore();
+  const { openLevelModal, getLevelInfo } = useWalletStore();
+  const levelInfo = getLevelInfo();
 
   const handleCopyId = () => {
     setCopied(true);
@@ -64,18 +75,24 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
       ]}
     >
       <View style={styles.topRow}>
-        {/* Avatar with Goddess/VIP border */}
-        <Avatar
-          uri={avatarUrl || defaultAvatar}
-          name={nickname}
-          size="lg"
-          borderColor={isHost ? colors.primary : colors.gold}
-          style={styles.avatarMargin}
-        />
+        {/* Avatar with Goddess/VIP border (Tap to preview profile ala Tigo) */}
+        <TouchableOpacity onPress={openMyProfilePreview} activeOpacity={0.8}>
+          <Avatar
+            uri={avatarUrl || defaultAvatar}
+            name={nickname}
+            size="lg"
+            borderColor={isHost ? colors.primary : colors.gold}
+            style={styles.avatarMargin}
+          />
+        </TouchableOpacity>
 
         {/* User Details */}
         <View style={styles.detailsCol}>
-          <View style={styles.nameRow}>
+          <TouchableOpacity
+            style={styles.nameRow}
+            onPress={openMyProfilePreview}
+            activeOpacity={0.7}
+          >
             <Text style={[styles.name, { color: colors.text }]} numberOfLines={1}>
               {nickname}
             </Text>
@@ -84,7 +101,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
             ) : (
               <User size={14} color={colors.secondary} style={{ marginLeft: 6 }} />
             )}
-          </View>
+          </TouchableOpacity>
 
           {/* User ID with Copy Button */}
           <TouchableOpacity
@@ -104,41 +121,37 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
             </View>
           </TouchableOpacity>
 
-          {/* Role & Verification Badge */}
+          {/* Role & Verification Badge ala Tigo */}
           <View style={styles.badgeRow}>
+            <VerifiedBadge size="sm" variant={isHost ? 'gradient' : 'outline'} />
+            <View style={{ width: 6 }} />
             {isHost ? (
               <Badge
-                label="Terverifikasi Asli"
-                variant="success"
-                size="sm"
-                icon={<ShieldCheck size={11} color={colors.success} />}
-              />
-            ) : (
-              <Badge
-                label="Anggota Resmi"
+                label="Host"
                 variant="primary"
                 size="sm"
-                icon={<Sparkles size={11} color={colors.primary} />}
+                icon={<Crown size={11} color={colors.primary} />}
               />
+            ) : (
+              <TouchableOpacity onPress={openLevelModal} activeOpacity={0.7}>
+                <LevelBadge level={levelInfo.currentTier.level} size="sm" />
+              </TouchableOpacity>
             )}
-            <View style={{ width: 6 }} />
-            <Badge
-              label={isHost ? 'Host' : levelText}
-              variant={isHost ? 'primary' : 'gold'}
-              size="sm"
-              icon={isHost ? <Crown size={11} color={colors.primary} /> : undefined}
-            />
           </View>
         </View>
       </View>
 
-      {/* Stats Row (Following, Followers, Visitors) */}
+      {/* Stats Row (Following, Followers, Visitors) - Visitors tap opens VisitorsModal! */}
       <View style={[styles.statsRow, { borderTopColor: colors.border }]}>
         <StatItem value={followingCount} label={followingLabel} />
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
         <StatItem value={followersCount} label={followersLabel} />
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
-        <StatItem value={visitorsCount} label={visitorsLabel} />
+        <StatItem
+          value={visitorsCount}
+          label={visitorsLabel}
+          onPress={openVisitorsModal}
+        />
       </View>
     </View>
   );

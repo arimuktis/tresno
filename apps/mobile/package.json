@@ -11,7 +11,7 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "lint": "tsc --noEmit",
-    "i18n:check": "tsx scripts/detect_i18n_issues.ts"
+    "i18n:check": "node --experimental-strip-types scripts/detect_i18n_issues.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

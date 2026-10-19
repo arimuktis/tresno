@@ -113,6 +113,8 @@ export const ChatRoomModal: React.FC = () => {
   const isUnlocked = isChatUnlocked(chatId);
   const isPeerFollowing = isFollowing(chatId);
   const isPeerMutual = isMutualFriend(chatId);
+  const storeStatus = usePresenceStore((s) => (currentPeer ? s.presences[currentPeer.id]?.status : undefined));
+  const effectivePresence = currentPeer?.presenceStatus || storeStatus || (currentPeer?.isOnline ? 'available' : 'offline');
 
   // States untuk AI Smart Icebreakers
   const [icebreakers, setIcebreakers] = useState<IcebreakerSuggestion[]>([]);
@@ -271,8 +273,6 @@ export const ChatRoomModal: React.FC = () => {
     await sendGift(gift, authUser?.id || 'me', authUser?.nickname || 'Saya');
   };
 
-  const storeStatus = usePresenceStore((s) => (currentPeer ? s.presences[currentPeer.id]?.status : undefined));
-  const effectivePresence = currentPeer?.presenceStatus || storeStatus || (currentPeer?.isOnline ? 'available' : 'offline');
 
   const handleStartDirectCall = () => {
     if (effectivePresence === 'busy') {

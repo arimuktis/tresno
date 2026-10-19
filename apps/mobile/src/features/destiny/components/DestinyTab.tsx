@@ -7,16 +7,19 @@ import { useWalletStore } from '../../wallet/stores/useWalletStore';
 import { useChatStore } from '../../messages/stores/useChatStore';
 import { useAuthStore } from '../../auth/stores/useAuthStore';
 import { FilterChipBar, FilterItem } from '../../../shared/components/molecules/FilterChipBar';
+import { PullToRefreshScrollView } from '../../../shared/components/molecules/PullToRefreshScrollView';
 import { AnchorCard, AnchorData } from '../../../shared/components/organisms/AnchorCard';
 import { StoryBar } from '../../stories/components/StoryBar';
 import { toast } from '../../../shared/stores/useToastStore';
 import { getSmartRankedAnchors } from '../services/destinyAlgorithm';
-import { Crown, RotateCw, Zap, Sparkles, Radio } from 'lucide-react-native';
+import { Crown, Zap, Sparkles, Radio } from 'lucide-react-native';
 import { supabaseRealtimeService } from '../../../shared/services/supabaseRealtimeService';
 import { posthog } from '../../../shared/services/posthogService';
 import { usePresenceStore } from '../../../shared/stores/usePresenceStore';
 import { soundService } from '../../../shared/services/soundService';
 import { useStoryStore } from '../../stories/stores/useStoryStore';
+import { useAnchorDetailStore } from '../stores/useAnchorDetailStore';
+import { AnchorProfileModal } from './AnchorProfileModal';
 
 export const DestinyTab: React.FC = () => {
   const { colors, isDark } = useThemeStore();
@@ -25,6 +28,7 @@ export const DestinyTab: React.FC = () => {
   const { coinBalance, openTopupModal } = useWalletStore();
   const { openChat } = useChatStore();
   const { user: authUser } = useAuthStore();
+  const { openAnchorDetail } = useAnchorDetailStore();
 
   const [activeFilter, setActiveFilter] = useState<'all' | 'online' | 'nearby' | 'popular'>('all');
   const [refreshSeed, setRefreshSeed] = useState(0);
@@ -66,11 +70,6 @@ export const DestinyTab: React.FC = () => {
       setIsRefreshing(false);
       toast.show('Daftar host & status live diperbarui', 'info');
     }, 700);
-  };
-
-  const handleShuffle = () => {
-    setRefreshSeed((prev) => prev + 1);
-    toast.show('Algoritma memperbarui rotasi eksposur host.', 'info');
   };
 
   const handleCallAnchor = (anchor: AnchorData) => {
@@ -124,55 +123,12 @@ export const DestinyTab: React.FC = () => {
 
 
   return (
-    <ScrollView
+    <PullToRefreshScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
       showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl
-          refreshing={isRefreshing}
-          onRefresh={handlePullRefresh}
-          colors={[colors.primary, '#FF2E63']}
-          tintColor={colors.primary}
-          progressBackgroundColor={colors.surfaceCard}
-        />
-      }
+      refreshing={isRefreshing}
+      onRefresh={handlePullRefresh}
     >
-      {/* Header with Title and Fair Exposure Shuffle Action */}
-      <View style={styles.header}>
-        <View style={{ flex: 1 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={[styles.title, { color: colors.text }]}>{t('destiny.title')}</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <View style={[styles.livePresenceBadge, { backgroundColor: 'rgba(0, 210, 106, 0.15)', borderColor: '#00D26A' }]}>
-                <View style={styles.livePulseDot} />
-                <Text style={{ color: '#00D26A', fontSize: 10, fontWeight: '800' }}>
-                  {availableCount} Tersedia
-                </Text>
-              </View>
-              {busyCount > 0 && (
-                <View style={[styles.livePresenceBadge, { backgroundColor: 'rgba(255, 46, 99, 0.15)', borderColor: '#FF2E63' }]}>
-                  <View style={[styles.livePulseDot, { backgroundColor: '#FF2E63' }]} />
-                  <Text style={{ color: '#FF2E63', fontSize: 10, fontWeight: '800' }}>
-                    {busyCount} Sedang Call
-                  </Text>
-                </View>
-              )}
-            </View>
-          </View>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            {t('destiny.subtitle')}
-          </Text>
-        </View>
-
-        <TouchableOpacity
-          onPress={handleShuffle}
-          style={[styles.shuffleBtn, { backgroundColor: colors.surfaceCard, borderColor: colors.border }]}
-          activeOpacity={0.7}
-        >
-          <RotateCw size={13} color={colors.primary} style={{ marginRight: 4 }} />
-          <Text style={[styles.shuffleText, { color: colors.primary }]}>Acak Rotasi</Text>
-        </TouchableOpacity>
-      </View>
 
       {/* Host Traffic Transparency & Anti-Sepi Radar Indicator (Khusus Host) */}
       {authUser?.isHost && (
@@ -224,46 +180,25 @@ export const DestinyTab: React.FC = () => {
           <AnchorCard
             key={anchor.id}
             anchor={anchor}
+            onPress={openAnchorDetail}
             onCall={handleCallAnchor}
             onChat={handleChatAnchor}
             callLabel={t('destiny.directCall')}
           />
         ))}
       </View>
-    </ScrollView>
+
+      {/* Anchor Profile Detail Modal ala Tigo */}
+      <AnchorProfileModal />
+    </PullToRefreshScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '800',
-  },
-  subtitle: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  shuffleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  shuffleText: {
-    fontSize: 11,
-    fontWeight: '700',
+    paddingHorizontal: 8,
+    paddingTop: 12,
   },
   hostStatusCard: {
     padding: 12,
@@ -308,23 +243,9 @@ const styles = StyleSheet.create({
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    justifyContent: 'space-between',
+    gap: 8,
     paddingBottom: 24,
-  },
-  livePresenceBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 10,
-    borderWidth: 1,
-    gap: 4,
-  },
-  livePulseDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#00D26A',
   },
 });
 

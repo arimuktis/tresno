@@ -15,6 +15,7 @@ export interface AnchorData {
   age: number;
   city: string;
   avatar: string;
+  photos?: string[];
   isOnline: boolean;
   presenceStatus?: 'available' | 'busy' | 'offline';
   ratePerMin: number;
@@ -22,12 +23,19 @@ export interface AnchorData {
   isCertified: boolean;
   exposureBadgeLabel?: string;
   exposureBadgeType?: 'new' | 'fast' | 'idle' | 'popular' | 'nearby';
+  level?: number;
+  hashtags?: string[];
+  gender?: 'male' | 'female';
+  isVerified?: boolean;
+  country?: string;
+  countryFlag?: string;
 }
 
 interface AnchorCardProps {
   anchor: AnchorData;
   onCall: (anchor: AnchorData) => void;
   onChat: (anchor: AnchorData) => void;
+  onPress?: (anchor: AnchorData) => void;
   callLabel?: string;
   style?: ViewStyle;
 }
@@ -36,6 +44,7 @@ export const AnchorCard: React.FC<AnchorCardProps> = ({
   anchor,
   onCall,
   onChat,
+  onPress,
   callLabel,
   style,
 }) => {
@@ -71,7 +80,9 @@ export const AnchorCard: React.FC<AnchorCardProps> = ({
   };
 
   return (
-    <View
+    <TouchableOpacity
+      activeOpacity={onPress ? 0.92 : 1}
+      onPress={() => onPress && onPress(anchor)}
       style={[
         styles.card,
         glassStyle,
@@ -149,7 +160,10 @@ export const AnchorCard: React.FC<AnchorCardProps> = ({
                 borderColor: colors.border,
               },
             ]}
-            onPress={() => onChat(anchor)}
+            onPress={(e) => {
+              e?.stopPropagation?.();
+              onChat(anchor);
+            }}
             activeOpacity={0.8}
           >
             <MessageCircle size={15} color={colors.text} />
@@ -159,7 +173,10 @@ export const AnchorCard: React.FC<AnchorCardProps> = ({
             testID="btn-direct-call"
             accessibilityLabel="btn-direct-call"
             style={[styles.callBtn, { backgroundColor: colors.primary }]}
-            onPress={handleCall}
+            onPress={(e) => {
+              e?.stopPropagation?.();
+              handleCall();
+            }}
             activeOpacity={0.8}
           >
             <PhoneCall size={12} color="#FFFFFF" style={{ marginRight: 4 }} />
@@ -167,14 +184,14 @@ export const AnchorCard: React.FC<AnchorCardProps> = ({
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    width: '48%',
-    borderRadius: 18,
+    width: '48.8%',
+    borderRadius: 16,
     borderWidth: 1,
     overflow: 'hidden',
   },

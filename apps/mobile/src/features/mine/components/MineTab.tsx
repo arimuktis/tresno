@@ -32,14 +32,18 @@ import { soundService } from '../../../shared/services/soundService';
 import { toast } from '../../../shared/stores/useToastStore';
 import { useChuckerStore } from '../../../shared/chucker';
 import { EgoWelcomeModal } from '../../../shared/components/ego/EgoWelcomeModal';
-import { Compass, ShieldAlert, Database } from 'lucide-react-native';
+import { Compass, ShieldAlert, Database, UserCheck, Award, Eye } from 'lucide-react-native';
 import { AlbumCarousel, AlbumViewerModal, ContentModerationPolicyModal, useAlbumStore } from '../../album';
 import { SupabaseHubModal } from '../../../shared/components/supabase';
+import { VisitorsModal } from '../../social/components/VisitorsModal';
+import { MyProfilePreviewModal } from './MyProfilePreviewModal';
+import { EditProfileModal } from './EditProfileModal';
+import { LevelModal } from '../../wallet/components/LevelModal';
 
 export const MineTab: React.FC = () => {
   const { colors, isDark, themeMode, openThemeModal } = useThemeStore();
   const { t, currentLanguage } = useTranslation();
-  const { user: authUser, logout } = useAuthStore();
+  const { user: authUser, logout, openEditProfile } = useAuthStore();
   const { photos, openPolicyModal } = useAlbumStore();
   const coverPhoto = photos.find((p) => p.isCover && p.status !== 'rejected')?.url;
   const {
@@ -51,9 +55,10 @@ export const MineTab: React.FC = () => {
     isCashoutModalOpen,
     openCashoutModal,
     closeCashoutModal,
+    openLevelModal,
   } = useWalletStore();
   const { isCmsOpen, openCms, closeCms } = useAdminCmsStore();
-  const { following, followers } = useSocialStore();
+  const { following, followers, openVisitorsModal } = useSocialStore();
   const { openMissionModal, getUnclaimedCount } = useMissionStore();
   const { open: openLegalModal } = useLegalModalStore();
   const { soundEnabled, toggleSound, receiveIncomingCall, receiveNotification } = useNotificationStore();
@@ -231,6 +236,29 @@ export const MineTab: React.FC = () => {
           subtitle="Uji Skema tresno://, Web Hash & Notifikasi Routing"
           badge="URL"
           onPress={() => useDeepLinkStore.getState().openTesterModal()}
+        />
+
+        <SettingMenuItem
+          icon={<Eye size={20} color="#FF6482" />}
+          title={t('visitors.title')}
+          subtitle="Lihat siapa saja yang membuka profil Anda"
+          badge={`${isHost ? 682 : 89}`}
+          onPress={openVisitorsModal}
+        />
+
+        <SettingMenuItem
+          icon={<Award size={20} color="#38BDF8" />}
+          title={t('level.title')}
+          subtitle="Aturan tingkat top-up, daily bonus & hak istimewa"
+          badge="VIP"
+          onPress={openLevelModal}
+        />
+
+        <SettingMenuItem
+          icon={<UserCheck size={20} color="#A855F7" />}
+          title={t('profile.editTitle')}
+          subtitle="Perbarui foto, nama panggilan, gender, dan hashtag"
+          onPress={openEditProfile}
         />
 
         <SettingMenuItem
@@ -510,6 +538,18 @@ export const MineTab: React.FC = () => {
         isVisible={isSupabaseModalOpen}
         onClose={() => setIsSupabaseModalOpen(false)}
       />
+
+      {/* Visitors Modal (ala Tigo) */}
+      <VisitorsModal />
+
+      {/* My Profile Preview Modal (ala Tigo) */}
+      <MyProfilePreviewModal />
+
+      {/* Edit Profile Modal (ala Tigo) */}
+      <EditProfileModal />
+
+      {/* Level & VIP Progression Modal (ala Tigo) */}
+      <LevelModal />
 
       {/* Bottom padding for navbar */}
       <View style={{ height: 32 }} />

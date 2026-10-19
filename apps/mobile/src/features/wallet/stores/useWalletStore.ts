@@ -2,8 +2,11 @@ import { create } from 'zustand';
 import { soundService } from '../../../shared/services/soundService';
 import { toast } from '../../../shared/stores/useToastStore';
 
+import { LEVEL_TIERS, calculateUserLevel, getNextLevelProgress, LevelTier } from '@tresno/shared';
+
 interface WalletState {
   coinBalance: number;
+  historicalTopup: number; // Akumulasi total koin topup sepanjang waktu
   pointsBalance: number;
   diamondBalance: number; // Backward compatibility alias
   chatCoupons: number; // Kupon Chat Gratis ala Tigo
@@ -11,10 +14,19 @@ interface WalletState {
   hasClaimedStarterPack: boolean; // Status klaim Paket Perdana Gentleman VIP Rp 9.900
   isStarterPackModalOpen: boolean;
   isTopupModalVisible: boolean;
+  isLevelModalOpen: boolean;
 
   setCoins: (amount: number) => void;
   deductCoins: (amount: number) => void;
   addCoins: (amount: number) => void;
+
+  setHistoricalTopup: (amount: number) => void;
+  getLevelInfo: () => {
+    currentTier: LevelTier;
+    nextTier: LevelTier | null;
+    progressPercent: number;
+    tokensNeeded: number;
+  };
 
   setPoints: (amount: number) => void;
   addPoints: (amount: number) => void;
@@ -35,6 +47,8 @@ interface WalletState {
   setDiamonds: (amount: number) => void; // Backward compatibility
   openTopupModal: () => void;
   closeTopupModal: () => void;
+  openLevelModal: () => void;
+  closeLevelModal: () => void;
   isCashoutModalOpen: boolean;
   openCashoutModal: () => void;
   closeCashoutModal: () => void;
@@ -43,6 +57,7 @@ interface WalletState {
 export const MIN_HOST_CASHOUT_POINTS = 2000; // Standar Tigo: minimal 2000 points ($20 USD / ~Rp 200.000)
 
 const STORAGE_COINS_KEY = 'tresno_wallet_coins';
+const STORAGE_HISTORICAL_TOPUP_KEY = 'tresno_wallet_historical_topup';
 const STORAGE_POINTS_KEY = 'tresno_wallet_points';
 const STORAGE_COUPONS_KEY = 'tresno_wallet_coupons';
 const STORAGE_MATCH_COUPONS_KEY = 'tresno_wallet_match_coupons';
@@ -57,6 +72,23 @@ const getInitialCoins = (): number => {
     }
   }
   return 50; // Welcome bonus
+};
+
+const getInitialHistoricalTopup = (): number => {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    const val = window.localStorage.getItem(STORAGE_HISTORICAL_TOPUP_KEY);
+    if (val !== null) {
+      const parsed = parseInt(val, 10);
+      if (!isNaN(parsed)) return parsed;
+    }
+  }
+  return 141040; // Default baseline benchmark (Lv6 ala Tigo Bell)
+};
+
+const saveHistoricalTopup = (amount: number) => {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    window.localStorage.setItem(STORAGE_HISTORICAL_TOPUP_KEY, amount.toString());
+  }
 };
 
 const getInitialPoints = (): number => {
@@ -131,6 +163,7 @@ const saveStarterPackClaimed = (claimed: boolean) => {
 
 export const useWalletStore = create<WalletState>((set, get) => ({
   coinBalance: getInitialCoins(),
+  historicalTopup: getInitialHistoricalTopup(),
   pointsBalance: getInitialPoints(),
   diamondBalance: getInitialPoints(), // Alias
   chatCoupons: getInitialCoupons(),
@@ -138,6 +171,7 @@ export const useWalletStore = create<WalletState>((set, get) => ({
   hasClaimedStarterPack: getInitialStarterPackClaimed(),
   isStarterPackModalOpen: false,
   isTopupModalVisible: false,
+  isLevelModalOpen: false,
 
   setCoins: (amount) => {
     saveCoins(amount);
@@ -152,9 +186,22 @@ export const useWalletStore = create<WalletState>((set, get) => ({
   addCoins: (amount) =>
     set((state) => {
       const newBalance = state.coinBalance + amount;
+      const newHistorical = state.historicalTopup + amount;
       saveCoins(newBalance);
-      return { coinBalance: newBalance };
+      saveHistoricalTopup(newHistorical);
+      return { coinBalance: newBalance, historicalTopup: newHistorical };
     }),
+
+  setHistoricalTopup: (amount) => {
+    saveHistoricalTopup(amount);
+    set({ historicalTopup: amount });
+  },
+  getLevelInfo: () => {
+    const { historicalTopup } = get();
+    return getNextLevelProgress(historicalTopup);
+  },
+  openLevelModal: () => set({ isLevelModalOpen: true }),
+  closeLevelModal: () => set({ isLevelModalOpen: false }),
 
   setPoints: (amount) => {
     const val = Math.round(amount * 100) / 100;

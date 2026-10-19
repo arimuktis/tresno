@@ -53,6 +53,8 @@ export interface TranslationSchema {
     month: string;
     year: string;
     retry: string;
+    edit: string;
+    copied: string;
   };
   network: {
     noConnection: string;
@@ -447,6 +449,36 @@ export interface TranslationSchema {
     statusRejected: string;
     testScannerTitle: string;
     testScannerRun: string;
+  };
+  visitors: {
+    title: string;
+    recentCount: string;
+    empty: string;
+    chatWith: string;
+  };
+  profile: {
+    editTitle: string;
+    previewTitle: string;
+    addPhoto: string;
+    profilePicture: string;
+    myInfo: string;
+    nickname: string;
+    userId: string;
+    gender: string;
+    birthday: string;
+    language: string;
+    myHashtags: string;
+    expressWithHashtags: string;
+  };
+  level: {
+    title: string;
+    topUpToLevelUp: string;
+    dailyBonus: string;
+    dailyBonusDesc: string;
+    levelRule: string;
+    ruleDesc: string;
+    levelCol: string;
+    topupCol: string;
   };
 }
 

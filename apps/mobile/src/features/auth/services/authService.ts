@@ -23,6 +23,13 @@ export interface AuthUser {
   isBanned: boolean;
   isOnboarded: boolean;
   provider: 'google' | 'phone' | 'guest' | 'email';
+  country?: string;
+  countryFlag?: string;
+  birthday?: string;
+  hashtags?: string[];
+  isVerified?: boolean;
+  historicalTopup?: number;
+  level?: number;
 }
 
 const STORAGE_SESSION_KEY = 'tresno_auth_session';
@@ -473,7 +480,7 @@ export const authService = {
 
     const user: AuthUser = {
       id,
-      nickname: `Tamu ${id.slice(-4)}`,
+      nickname: `Bell`,
       gender: 'male',
       age: 21,
       isHost: false,
@@ -482,6 +489,13 @@ export const authService = {
       isBanned: false,
       isOnboarded: false,
       provider: 'guest',
+      country: 'Indonesia',
+      countryFlag: '🇮🇩',
+      birthday: '2005-09-20',
+      hashtags: ['#Virgo'],
+      isVerified: true,
+      historicalTopup: 141040,
+      level: 6,
     };
 
     this.saveSession(session, user);

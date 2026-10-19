@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   scrollContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 2,
     flexDirection: 'row',
     alignItems: 'center',
   },

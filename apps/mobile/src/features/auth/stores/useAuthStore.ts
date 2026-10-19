@@ -46,6 +46,17 @@ interface AuthState {
   refreshSession: () => Promise<boolean>;
   checkAuthSession: () => Promise<void>;
   logout: () => Promise<void>;
+
+  // Profile Preview & Edit Modals (ala Tigo)
+  isMyProfilePreviewOpen: boolean;
+  openMyProfilePreview: () => void;
+  closeMyProfilePreview: () => void;
+
+  isEditProfileOpen: boolean;
+  openEditProfile: () => void;
+  closeEditProfile: () => void;
+
+  updateProfile: (data: Partial<AuthUser>) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -403,5 +414,28 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       toast.info('Sesi Anda telah berhasil diakhiri.');
     }
+  },
+
+  // Profile Preview & Edit Modals (ala Tigo)
+  isMyProfilePreviewOpen: false,
+  openMyProfilePreview: () => set({ isMyProfilePreviewOpen: true }),
+  closeMyProfilePreview: () => set({ isMyProfilePreviewOpen: false }),
+
+  isEditProfileOpen: false,
+  openEditProfile: () => set({ isEditProfileOpen: true }),
+  closeEditProfile: () => set({ isEditProfileOpen: false }),
+
+  updateProfile: async (data: Partial<AuthUser>) => {
+    const { user, session } = get();
+    if (!user) return;
+    const updatedUser: AuthUser = {
+      ...user,
+      ...data,
+    };
+    if (session) {
+      authService.saveSession(session, updatedUser);
+    }
+    set({ user: updatedUser });
+    toast.success('Profil berhasil diperbarui!');
   },
 }));
