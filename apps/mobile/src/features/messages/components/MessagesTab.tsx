@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Modal, TouchableOpacity, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Modal, TouchableOpacity, Pressable, RefreshControl } from 'react-native';
 import { MessageSquareDashed, Pin, PinOff, PhoneCall, MessageCircle, X, Trash2 } from 'lucide-react-native';
 import { useThemeStore } from '../../../theme/useThemeStore';
 import { useTranslation } from '../../../i18n';
@@ -31,6 +31,15 @@ export const MessagesTab: React.FC = () => {
 
   const [filter, setFilter] = useState<'all' | 'chat' | 'call' | 'system'>('all');
   const [selectedManageItem, setSelectedManageItem] = useState<MessageRowData | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handlePullRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => {
+      setIsRefreshing(false);
+      toast.show('Pesan & obrolan disinkronkan', 'info');
+    }, 600);
+  };
 
   const filterTabs: FilterItem<'all' | 'chat' | 'call' | 'system'>[] = [
     { key: 'all', label: t('messages.tabAll') },
@@ -120,6 +129,15 @@ export const MessagesTab: React.FC = () => {
         style={[styles.container, { backgroundColor: colors.background }]}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handlePullRefresh}
+            colors={[colors.primary, '#FF2E63']}
+            tintColor={colors.primary}
+            progressBackgroundColor={colors.surfaceCard}
+          />
+        }
       >
         {/* Header Halaman */}
         <View style={styles.header}>

@@ -300,13 +300,61 @@ Dokumen ini merangkum seluruh aturan, konvensi teknis, standar UI/UX, dan arsite
 
 ---
 
-## 15. Checklist Sebelum Melakukan Commit / Rilis
+## 15. Standar Detektor i18n, Deep Link & Pull-to-Refresh
+
+1. **Standar Detektor i18n & Missing Keys**:
+   - **Static Linter CLI**:
+     - Skrip `pnpm --filter @tresno/mobile run i18n:check` wajib menghasilkan 0 missing keys antara `id.ts` dan `en.ts`.
+     - Seluruh string teks UI, label, dan placeholder pada JSX wajib dibungkus hook `t('namespace.key')`.
+   - **Runtime Missing Key Registry & Visual Highlighter**:
+     - Dikelola oleh [useLanguageStore.ts](file:///Users/jangkungari/Desktop/tigo/tresno/apps/mobile/src/i18n/useLanguageStore.ts).
+     - Di mode development, key yang tidak ditemukan akan dicatat di `missingKeysRegistry` dan memunculkan peringatan di konsol.
+     - Mode visual debug (`debugHighlight`) dapat diaktifkan di menu pengaturan tema untuk menampilkan badge `⚠️[missing:key]`.
+
+2. **Standar Deep Link & Notification Routing**:
+   - **Skema Tautan**:
+     - Skema kustom: `tresno://<route>`
+     - Web path / universal URL: `https://tresno.app/<route>` atau `/#/<route>`
+   - **Daftar Rute Terdaftar ([deepLinkService.ts](file:///Users/jangkungari/Desktop/tigo/tresno/apps/mobile/src/shared/services/deepLinkService.ts))**:
+     - `tresno://destiny?filter=online|popular|nearby` (Tab Destiny)
+     - `tresno://match` (Radar Matchmaking)
+     - `tresno://chat/:id` (Buka Chat Room langsung)
+     - `tresno://anchor/:id` (Buka profil host / inisiasi panggilan)
+     - `tresno://story/:id` (Buka viewer cerita 24 jam)
+     - `tresno://topup` atau `tresno://wallet` (Modal Top-Up QRIS)
+     - `tresno://cashout` (Modal Penarikan Dana Host)
+     - `tresno://missions` (Pusat Misi & Hadiah)
+     - `tresno://gentleman` (Paket Perdana Gentleman VIP)
+     - `tresno://admin` (Admin CMS)
+     - `tresno://theme` (Pengaturan Tema & Bahasa)
+   - **Aturan Notifikasi Ber-Deep Link**:
+     - Seluruh notifikasi yang memerlukan aksi tindak lanjut wajib menyertakan properti `actionUrl`.
+     - [InAppNotificationBanner.tsx](file:///Users/jangkungari/Desktop/tigo/tresno/apps/mobile/src/features/notifications/components/InAppNotificationBanner.tsx) secara otomatis memicu `deepLinkService.handleUrl(actionUrl)` saat diketuk.
+   - **Pengujian**:
+     - Gunakan [DeepLinkTesterModal.tsx](file:///Users/jangkungari/Desktop/tigo/tresno/apps/mobile/src/shared/components/devtools/DeepLinkTesterModal.tsx) (tersedia di tab Saya) untuk menguji rute dan simulasi notifikasi.
+
+3. **Standar Pull-to-Refresh Reaktif**:
+   - Wajib dipasang pada layar dengan konten dinamis utama ([DestinyTab.tsx](file:///Users/jangkungari/Desktop/tigo/tresno/apps/mobile/src/features/destiny/components/DestinyTab.tsx) dan [MessagesTab.tsx](file:///Users/jangkungari/Desktop/tigo/tresno/apps/mobile/src/features/messages/components/MessagesTab.tsx)).
+   - **Styling**: `colors={[colors.primary, '#FF2E63']}`, `tintColor={colors.primary}`, `progressBackgroundColor={colors.surfaceCard}`.
+   - **Pipeline Pembaruan**:
+     - Kocok ulang seed algoritma interleaving host (`refreshSeed + 1`).
+     - Ambil cerita terbaru (`fetchStories`).
+     - Sinkronisasi kehadiran live host.
+     - Efek suara audio haptik ringan (`soundService.play('message')`).
+     - Durasi debounce minimal 600–700ms dengan umpan balik toast halus saat selesai.
+
+---
+
+## 16. Checklist Sebelum Melakukan Commit / Rilis
 
 - [ ] `pnpm --filter @tresno/mobile exec tsc --noEmit` lolos dengan status exit code 0.
 - [ ] `pnpm --filter @tresno/mobile build:web` berhasil membuat bundle produksi.
+- [ ] `pnpm --filter @tresno/mobile run i18n:check` lolos dengan 0 missing translation keys.
+- [ ] Skema Deep Link `tresno://` dapat menangani rute navigasi dan diklik dari banner notifikasi.
+- [ ] Pull-to-refresh di Destiny Tab mengocok host dan memperbarui status secara reaktif.
 - [ ] Indikator status kehadiran (Tri-State: Hijau=Available, Merah Pink=Sedang Call, Abu-abu=Offline) aktif dan menggunakan live data.
 - [ ] Tombol panggil terproteksi saat host sedang sibuk dalam panggilan lain (`busy`).
-- [ ] Semua modal, bottom sheet, dan dialog dialog terkunci rapi di dalam frame 414px tanpa overflow ke kiri/kanan.
+- [ ] Semua modal, bottom sheet, dan dialog terkunci rapi di dalam frame 414px tanpa overflow.
 - [ ] Centered dialog menggunakan `width: '92%', maxWidth: 380`.
 - [ ] Bottom sheet menggunakan `maxWidth: 414` dengan sudut bawah 0 (flush).
 - [ ] Batas maksimal 20 pin obrolan tidak terlampaui.
@@ -321,6 +369,7 @@ Dokumen ini merangkum seluruh aturan, konvensi teknis, standar UI/UX, dan arsite
 - [ ] Ekstensi PgVector dan indexing HNSW 384 dimensi siap digunakan untuk pencocokan semantik.
 - [ ] Panel Admin CMS komprehensif (PostHog, PgVector, Users CRM, Moderasi, Finance, Wiretap) dapat dibuka.
 - [ ] Semua key bahasa baru telah ditambahkan ke `types.ts`, `id.ts`, dan `en.ts`.
+
 
 
 

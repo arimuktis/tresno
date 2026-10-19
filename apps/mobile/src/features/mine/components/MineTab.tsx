@@ -13,7 +13,8 @@ import { useWalletStore } from '../../wallet/stores/useWalletStore';
 import { MATCH_RULES } from '@tresno/shared';
 import { useSocialStore } from '../../social/stores/useSocialStore';
 import { useMissionStore } from '../../missions/stores/useMissionStore';
-import { Settings, Gift, Palette, Phone, Lock, FileText, Shield, ShieldCheck, LogOut, Bell, Volume2, VolumeX, Sparkles, MessageCircle, Crown, Zap, TrendingUp, Activity } from 'lucide-react-native';
+import { Settings, Gift, Palette, Phone, Lock, FileText, Shield, ShieldCheck, LogOut, Bell, Volume2, VolumeX, Sparkles, MessageCircle, Crown, Zap, TrendingUp, Activity, Link } from 'lucide-react-native';
+import { useDeepLinkStore } from '../../../shared/stores/useDeepLinkStore';
 import { IconButton } from '../../../shared/components/atoms/IconButton';
 import { SettingMenuItem } from '../../../shared/components/molecules/SettingMenuItem';
 import { LegalModal } from '../../../shared/components/molecules/LegalModal';
@@ -24,6 +25,7 @@ import { WalletCard } from '../../../shared/components/organisms/WalletCard';
 import { MissionsCenterModal } from '../../missions/components/MissionsCenterModal';
 import { CashoutModal } from '../../wallet/components/CashoutModal';
 import { AdminCmsModal } from '../../admin/components/AdminCmsModal';
+import { useAdminCmsStore } from '../../admin/stores/useAdminCmsStore';
 import { SecurityInspectorModal } from '../../../shared/security/SecurityInspectorModal';
 import { useNotificationStore } from '../../notifications/stores/useNotificationStore';
 import { soundService } from '../../../shared/services/soundService';
@@ -40,7 +42,17 @@ export const MineTab: React.FC = () => {
   const { user: authUser, logout } = useAuthStore();
   const { photos, openPolicyModal } = useAlbumStore();
   const coverPhoto = photos.find((p) => p.isCover && p.status !== 'rejected')?.url;
-  const { coinBalance, chatCoupons, openTopupModal, pointsBalance, deductPoints } = useWalletStore();
+  const {
+    coinBalance,
+    chatCoupons,
+    openTopupModal,
+    pointsBalance,
+    deductPoints,
+    isCashoutModalOpen,
+    openCashoutModal,
+    closeCashoutModal,
+  } = useWalletStore();
+  const { isCmsOpen, openCms, closeCms } = useAdminCmsStore();
   const { following, followers } = useSocialStore();
   const { openMissionModal, getUnclaimedCount } = useMissionStore();
   const { open: openLegalModal } = useLegalModalStore();
@@ -214,6 +226,14 @@ export const MineTab: React.FC = () => {
         />
 
         <SettingMenuItem
+          icon={<Link size={20} color="#3B82F6" />}
+          title="Simulator Deep Link & Tautan Kustom"
+          subtitle="Uji Skema tresno://, Web Hash & Notifikasi Routing"
+          badge="URL"
+          onPress={() => useDeepLinkStore.getState().openTesterModal()}
+        />
+
+        <SettingMenuItem
           icon={<Activity size={20} color={colors.primary} />}
           title="Network Inspector (Chucker)"
           subtitle={`${chuckerStats.total} Request • ${chuckerStats.errors} Error • ${isBubbleVisible ? 'Bubble Aktif' : 'Bubble Nonaktif'}`}
@@ -302,14 +322,20 @@ export const MineTab: React.FC = () => {
 
       {/* Refined Host Withdrawal Request & History Modal */}
       <CashoutModal
-        isVisible={cashoutModalVisible}
-        onClose={() => setCashoutModalVisible(false)}
+        isVisible={cashoutModalVisible || isCashoutModalOpen}
+        onClose={() => {
+          setCashoutModalVisible(false);
+          closeCashoutModal();
+        }}
       />
 
       {/* Integrated CMS Admin Panel (Pemilik APK: Revenue Share, Payout Review, Spenders) */}
       <AdminCmsModal
-        isVisible={isCmsModalOpen}
-        onClose={() => setIsCmsModalOpen(false)}
+        isVisible={isCmsModalOpen || isCmsOpen}
+        onClose={() => {
+          setIsCmsModalOpen(false);
+          closeCms();
+        }}
       />
 
       {/* Security Center & Anti-Fraud Diagnostic Modal (Play Integrity, App Check, Root/Frida) */}
@@ -387,9 +413,10 @@ export const MineTab: React.FC = () => {
                   id: `test_msg_${Date.now()}`,
                   type: 'chat_message',
                   title: 'Dewi Lestari mengirim pesan',
-                  body: 'Halo! Aku suka banget ngobrol sama kamu tadi',
+                  body: 'Halo! Aku suka banget ngobrol sama kamu tadi ❤️ (Ketuk untuk balas)',
                   timestamp: Date.now(),
                   read: false,
+                  actionUrl: 'tresno://chat/anchor_1',
                   avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
                   senderId: 'anchor_1',
                   senderName: 'Dewi Lestari',
@@ -399,7 +426,7 @@ export const MineTab: React.FC = () => {
             >
               <MessageCircle size={16} color={colors.primary} />
               <Text style={{ color: colors.text, fontSize: 12, fontWeight: '600', marginLeft: 8 }}>
-                Uji Notif Pesan (Glass Chime)
+                Uji Notif Pesan (Deep Link Chat)
               </Text>
             </TouchableOpacity>
 
@@ -409,16 +436,17 @@ export const MineTab: React.FC = () => {
                   id: `test_gift_${Date.now()}`,
                   type: 'gift_received',
                   title: 'Hadiah Mawar Diterima',
-                  body: 'Kamu menerima hadiah virtual dari penggemar setia!',
+                  body: 'Kamu menerima hadiah virtual dari penggemar! Ketuk untuk lihat Explore.',
                   timestamp: Date.now(),
                   read: false,
+                  actionUrl: 'tresno://destiny?filter=online',
                 });
               }}
               style={[styles.testActionBtn, { backgroundColor: colors.surfaceGlass, borderColor: colors.border }]}
             >
               <Sparkles size={16} color="#FFB800" />
               <Text style={{ color: colors.text, fontSize: 12, fontWeight: '600', marginLeft: 8 }}>
-                Uji Notif Hadiah (Sparkle Chime)
+                Uji Notif Hadiah (Deep Link Destiny)
               </Text>
             </TouchableOpacity>
 

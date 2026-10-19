@@ -34,6 +34,8 @@ import { useTranslation } from './i18n';
 import { initChucker, ChuckerBubble, ChuckerModal } from './shared/chucker';
 import { supabaseRealtimeService } from './shared/services/supabaseRealtimeService';
 import { authService } from './features/auth/services/authService';
+import { deepLinkService } from './shared/services/deepLinkService';
+import { DeepLinkTesterModal } from './shared/components/devtools/DeepLinkTesterModal';
 
 // Inisialisasi Chucker Network Inspector untuk merekam seluruh request HTTP & WebSocket
 initChucker();
@@ -58,6 +60,12 @@ const AppContent: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<MainTabKey>('match');
   const [matchPaidWith, setMatchPaidWith] = useState<'coupon' | 'coins' | null>(null);
+
+  // Inisialisasi Deep Link Engine dan hubungkan ke tab switcher
+  useEffect(() => {
+    deepLinkService.registerTabNavigator(setActiveTab);
+    deepLinkService.init();
+  }, []);
 
   // Default screen fallback setelah login atau onboarding selalu ke screen Matchmaking ('match')
   useEffect(() => {
@@ -355,6 +363,9 @@ const AppContent: React.FC = () => {
 
           {/* Modal Pengaturan Tema, Warna & Bahasa */}
           <ThemeSwitcherModal />
+
+          {/* Modal Simulator Deep Link & Notifikasi Routing */}
+          <DeepLinkTesterModal />
         </>
       )}
 

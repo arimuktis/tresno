@@ -21,6 +21,7 @@ interface StoryState {
   // Actions
   fetchStories: () => Promise<void>;
   openStory: (groupIndex: number, storyIndex?: number) => void;
+  openStoryById: (storyIdOrUserId: string) => void;
   closeStory: () => void;
   nextStory: () => void;
   prevStory: () => void;
@@ -100,6 +101,20 @@ export const useStoryStore = create<StoryState>((set, get) => ({
     const currentStory = group.stories[storyIndex];
     if (currentStory) {
       storyService.recordView(currentStory.id);
+    }
+  },
+
+  openStoryById: (storyIdOrUserId: string) => {
+    const { storyGroups, openStory } = get();
+    if (!storyGroups.length) return;
+    const groupIdx = storyGroups.findIndex(
+      (g) => g.userId === storyIdOrUserId || g.stories.some((s) => s.id === storyIdOrUserId)
+    );
+    if (groupIdx !== -1) {
+      const storyIdx = storyGroups[groupIdx].stories.findIndex((s) => s.id === storyIdOrUserId);
+      openStory(groupIdx, storyIdx >= 0 ? storyIdx : 0);
+    } else {
+      openStory(0, 0);
     }
   },
 

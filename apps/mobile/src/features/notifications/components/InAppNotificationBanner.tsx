@@ -15,6 +15,7 @@ import { useThemeStore } from '../../../theme/useThemeStore';
 import { useNotificationStore } from '../stores/useNotificationStore';
 import { useChatStore } from '../../messages/stores/useChatStore';
 import { useWalletStore } from '../../wallet/stores/useWalletStore';
+import { deepLinkService } from '../../../shared/services/deepLinkService';
 
 export const InAppNotificationBanner: React.FC = () => {
   const insets = useSafeAreaInsets();
@@ -63,15 +64,34 @@ export const InAppNotificationBanner: React.FC = () => {
     markAsRead(activeBanner.id);
     dismissBanner();
 
-    if (activeBanner.type === 'chat_message' && activeBanner.senderId) {
-      openChat({
-        id: activeBanner.senderId,
-        name: activeBanner.senderName || 'Teman Obrolan',
-        avatar: activeBanner.avatarUrl || '',
-        isOnline: true,
-      });
-    } else if (activeBanner.type === 'system_promo' || activeBanner.type === 'wallet_topup') {
-      openTopupModal();
+    // 1. If notification has explicit actionUrl (deep link), route via DeepLinkService!
+    if (activeBanner.actionUrl) {
+      deepLinkService.handleUrl(activeBanner.actionUrl, 'notification');
+      return;
+    }
+
+    // 2. Fallback smart routing based on notification type
+    switch (activeBanner.type) {
+      case 'chat_message':
+        if (activeBanner.senderId) {
+          deepLinkService.handleUrl(`tresno://chat/${activeBanner.senderId}`, 'notification');
+        } else {
+          deepLinkService.handleUrl('tresno://messages', 'notification');
+        }
+        break;
+      case 'system_promo':
+      case 'wallet_topup':
+        deepLinkService.handleUrl('tresno://topup', 'notification');
+        break;
+      case 'match_found':
+        deepLinkService.handleUrl('tresno://match', 'notification');
+        break;
+      case 'gift_received':
+        deepLinkService.handleUrl('tresno://destiny', 'notification');
+        break;
+      default:
+        deepLinkService.handleUrl('tresno://destiny', 'notification');
+        break;
     }
   };
 

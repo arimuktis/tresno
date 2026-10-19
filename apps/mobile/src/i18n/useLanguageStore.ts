@@ -6,9 +6,15 @@ interface LanguageState {
   currentLanguage: SupportedLanguage;
   setLanguage: (lang: SupportedLanguage) => void;
   t: (key: TranslationKey, params?: Record<string, string | number>) => string;
+  missingKeys: string[];
+  debugHighlight: boolean;
+  setDebugHighlight: (enabled: boolean) => void;
+  clearMissingKeys: () => void;
+  getMissingKeys: () => string[];
 }
 
 const STORAGE_KEY = 'tresno_language';
+const DEBUG_STORAGE_KEY = 'tresno_i18n_debug';
 
 const getInitialLanguage = (): SupportedLanguage => {
   if (typeof window !== 'undefined' && window.localStorage) {
@@ -22,6 +28,13 @@ const getInitialLanguage = (): SupportedLanguage => {
     }
   }
   return 'id'; // Default Bahasa Indonesia untuk aplikasi Tresno
+};
+
+const getInitialDebug = (): boolean => {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    return window.localStorage.getItem(DEBUG_STORAGE_KEY) === 'true';
+  }
+  return false;
 };
 
 const resolveKey = (
@@ -40,8 +53,12 @@ const resolveKey = (
   return typeof current === 'string' ? current : undefined;
 };
 
+// In-memory set for zero-overhead deduping of missing keys
+const missingKeysSet = new Set<string>();
+
 export const useLanguageStore = create<LanguageState>((set, get) => {
   const initialLanguage = getInitialLanguage();
+  const initialDebug = getInitialDebug();
 
   const translate = (
     key: TranslationKey,
@@ -56,7 +73,19 @@ export const useLanguageStore = create<LanguageState>((set, get) => {
       template = resolveKey(LOCALES.id, key);
     }
 
+    // DETEKTOR MISSING KEY
     if (!template) {
+      if (!missingKeysSet.has(key)) {
+        missingKeysSet.add(key);
+        set({ missingKeys: Array.from(missingKeysSet) });
+        if (typeof console !== 'undefined') {
+          console.warn(`[i18n DETECTOR] ⚠️ Missing translation key: "${key}" (currentLang: ${lang})`);
+        }
+      }
+
+      if (get().debugHighlight) {
+        return `⚠️[missing:${key}]`;
+      }
       return key;
     }
 
@@ -73,12 +102,25 @@ export const useLanguageStore = create<LanguageState>((set, get) => {
 
   return {
     currentLanguage: initialLanguage,
+    missingKeys: [],
+    debugHighlight: initialDebug,
     setLanguage: (lang) => {
       if (typeof window !== 'undefined' && window.localStorage) {
         window.localStorage.setItem(STORAGE_KEY, lang);
       }
       set({ currentLanguage: lang });
     },
+    setDebugHighlight: (enabled) => {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(DEBUG_STORAGE_KEY, enabled ? 'true' : 'false');
+      }
+      set({ debugHighlight: enabled });
+    },
+    clearMissingKeys: () => {
+      missingKeysSet.clear();
+      set({ missingKeys: [] });
+    },
+    getMissingKeys: () => Array.from(missingKeysSet),
     t: translate,
   };
 });
@@ -90,11 +132,19 @@ export const useTranslation = () => {
   const currentLanguage = useLanguageStore((s) => s.currentLanguage);
   const setLanguage = useLanguageStore((s) => s.setLanguage);
   const t = useLanguageStore((s) => s.t);
+  const missingKeys = useLanguageStore((s) => s.missingKeys);
+  const debugHighlight = useLanguageStore((s) => s.debugHighlight);
+  const setDebugHighlight = useLanguageStore((s) => s.setDebugHighlight);
+  const clearMissingKeys = useLanguageStore((s) => s.clearMissingKeys);
 
   return {
     t,
     currentLanguage,
     setLanguage,
+    missingKeys,
+    debugHighlight,
+    setDebugHighlight,
+    clearMissingKeys,
     languageInfo: SUPPORTED_LANGUAGES[currentLanguage],
     isIndonesian: currentLanguage === 'id',
     isEnglish: currentLanguage === 'en',

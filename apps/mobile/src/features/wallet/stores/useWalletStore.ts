@@ -35,6 +35,9 @@ interface WalletState {
   setDiamonds: (amount: number) => void; // Backward compatibility
   openTopupModal: () => void;
   closeTopupModal: () => void;
+  isCashoutModalOpen: boolean;
+  openCashoutModal: () => void;
+  closeCashoutModal: () => void;
 }
 
 export const MIN_HOST_CASHOUT_POINTS = 2000; // Standar Tigo: minimal 2000 points ($20 USD / ~Rp 200.000)
@@ -257,4 +260,8 @@ export const useWalletStore = create<WalletState>((set, get) => ({
 
   openTopupModal: () => set({ isTopupModalVisible: true }),
   closeTopupModal: () => set({ isTopupModalVisible: false }),
+
+  isCashoutModalOpen: false,
+  openCashoutModal: () => set({ isCashoutModalOpen: true }),
+  closeCashoutModal: () => set({ isCashoutModalOpen: false }),
 }));

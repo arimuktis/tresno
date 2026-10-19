@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView } from 'react-native';
-import { Moon, Sun, Sliders, X, Check, Sparkles } from 'lucide-react-native';
+import { Moon, Sun, Sliders, X, Check, Sparkles, AlertTriangle } from 'lucide-react-native';
 import {
   useThemeStore,
   ACCENT_PALETTES,
@@ -29,7 +29,15 @@ export const ThemeSwitcherModal: React.FC<ThemeSwitcherModalProps> = ({
     closeThemeModal,
   } = useThemeStore();
 
-  const { t, currentLanguage, setLanguage } = useTranslation();
+  const {
+    t,
+    currentLanguage,
+    setLanguage,
+    missingKeys,
+    debugHighlight,
+    setDebugHighlight,
+    clearMissingKeys,
+  } = useTranslation();
 
   const isVisible = propVisible !== undefined ? propVisible : isThemeModalOpen;
   const handleClose = propOnClose || closeThemeModal;
@@ -308,6 +316,50 @@ export const ThemeSwitcherModal: React.FC<ThemeSwitcherModalProps> = ({
                   </Text>
                 </TouchableOpacity>
               </View>
+            </View>
+
+            {/* Section 5: Detektor i18n & Missing Keys Live */}
+            <View style={{ marginTop: 18, marginBottom: 8, padding: 12, borderRadius: 14, backgroundColor: colors.surfaceCard, borderWidth: 1, borderColor: colors.border }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <AlertTriangle size={15} color={missingKeys.length > 0 ? '#FF3B30' : '#10B981'} />
+                  <Text style={{ fontSize: 12, fontWeight: '700', color: colors.text }}>
+                    Detektor Missing Key i18n
+                  </Text>
+                </View>
+                <View style={{ backgroundColor: missingKeys.length > 0 ? 'rgba(255, 59, 48, 0.15)' : 'rgba(16, 185, 129, 0.15)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
+                  <Text style={{ fontSize: 10, fontWeight: '800', color: missingKeys.length > 0 ? '#FF3B30' : '#10B981' }}>
+                    {missingKeys.length === 0 ? '0 Missing (100% Aman)' : `${missingKeys.length} Missing`}
+                  </Text>
+                </View>
+              </View>
+
+              <Text style={{ fontSize: 10, color: colors.textSecondary, marginBottom: 10 }}>
+                Detektor otomatis memindai key terjemahan yang belum terdaftar saat aplikasi berjalan.
+              </Text>
+
+              <TouchableOpacity
+                onPress={() => setDebugHighlight(!debugHighlight)}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingVertical: 8,
+                  paddingHorizontal: 10,
+                  borderRadius: 10,
+                  backgroundColor: debugHighlight ? 'rgba(255, 0, 94, 0.15)' : colors.surfaceGlass,
+                  borderWidth: 1,
+                  borderColor: debugHighlight ? colors.primary : colors.border,
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={{ fontSize: 11, fontWeight: '600', color: colors.text }}>
+                  Mode Visual Debug (Sorot Key Missing)
+                </Text>
+                <View style={{ width: 16, height: 16, borderRadius: 4, backgroundColor: debugHighlight ? colors.primary : 'transparent', borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' }}>
+                  {debugHighlight && <Check size={11} color="#FFFFFF" strokeWidth={3} />}
+                </View>
+              </TouchableOpacity>
             </View>
           </ScrollView>
 

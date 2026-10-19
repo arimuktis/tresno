@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { useThemeStore } from '../../../theme/useThemeStore';
 import { useTranslation } from '../../../i18n';
 import { useCallStore } from '../../video-chat/stores/useCallStore';
@@ -15,6 +15,8 @@ import { Crown, RotateCw, Zap, Sparkles, Radio } from 'lucide-react-native';
 import { supabaseRealtimeService } from '../../../shared/services/supabaseRealtimeService';
 import { posthog } from '../../../shared/services/posthogService';
 import { usePresenceStore } from '../../../shared/stores/usePresenceStore';
+import { soundService } from '../../../shared/services/soundService';
+import { useStoryStore } from '../../stories/stores/useStoryStore';
 
 export const DestinyTab: React.FC = () => {
   const { colors, isDark } = useThemeStore();
@@ -26,6 +28,7 @@ export const DestinyTab: React.FC = () => {
 
   const [activeFilter, setActiveFilter] = useState<'all' | 'online' | 'nearby' | 'popular'>('all');
   const [refreshSeed, setRefreshSeed] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const availableCount = usePresenceStore((s) => s.getAvailableCount());
   const busyCount = usePresenceStore((s) => s.getBusyCount());
@@ -39,6 +42,31 @@ export const DestinyTab: React.FC = () => {
 
   // Ambil daftar anchor yang diurutkan menggunakan Algoritma Multi-Bucket Interleaving Anti-Sepi
   const anchors = getSmartRankedAnchors(activeFilter, 'Jakarta', refreshSeed);
+
+  // Pull-to-refresh handler
+  const handlePullRefresh = async () => {
+    setIsRefreshing(true);
+    soundService.playMessageChime();
+
+    // 1. Re-evaluate Smart Interleaving Algorithm
+    setRefreshSeed((prev) => prev + 1);
+
+    // 2. Refresh 24h stories
+    useStoryStore.getState().fetchStories();
+
+    // 3. Track PostHog telemetry
+    posthog.capture('destiny_pulled_to_refresh', {
+      filter: activeFilter,
+      availableCount,
+      busyCount,
+    });
+
+    // 4. Smooth minimum animation timeout (700ms)
+    setTimeout(() => {
+      setIsRefreshing(false);
+      toast.show('Daftar host & status live diperbarui', 'info');
+    }, 700);
+  };
 
   const handleShuffle = () => {
     setRefreshSeed((prev) => prev + 1);
@@ -96,7 +124,19 @@ export const DestinyTab: React.FC = () => {
 
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefreshing}
+          onRefresh={handlePullRefresh}
+          colors={[colors.primary, '#FF2E63']}
+          tintColor={colors.primary}
+          progressBackgroundColor={colors.surfaceCard}
+        />
+      }
+    >
       {/* Header with Title and Fair Exposure Shuffle Action */}
       <View style={styles.header}>
         <View style={{ flex: 1 }}>

@@ -117,11 +117,19 @@ interface AdminCmsState {
     agoraAppId: string;
   };
   setApiKeys: (keys: Partial<AdminCmsState['apiKeys']>) => void;
+
+  isCmsOpen: boolean;
+  openCms: () => void;
+  closeCms: () => void;
 }
 
 export const useAdminCmsStore = create<AdminCmsState>((set, get) => ({
   activeTab: 'dashboard',
   setActiveTab: (tab) => set({ activeTab: tab }),
+
+  isCmsOpen: false,
+  openCms: () => set({ isCmsOpen: true }),
+  closeCms: () => set({ isCmsOpen: false }),
 
   // 1. PostHog
   posthogStats: null,

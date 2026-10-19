@@ -150,8 +150,21 @@
   - *Non-Slide (Instant / Center Scale):* Bottom Navigation Dock, Dialog Konfirmasi Peringatan, dan Overlay Keamanan DRM.
 
 ### FR-09: Internasionalisasi (i18n)
-- **FR-09.1 Dukungan Dwi-Bahasa Penuh:** Bahasa Indonesia (`id`) dan English (`en`) dengan 100% keselarasan kunci (334+ keys).
-- **FR-09.2 Switcher Cepat:** Pengguna dapat mengganti bahasa kapan saja melalui pill pemilih tema & bahasa di bagian atas layar.
+- **FR-09.1 Dukungan Dwi-Bahasa Penuh:** Bahasa Indonesia (`id`) dan English (`en`) dengan 100% keselarasan kunci (381+ keys).
+- **FR-09.2 Switcher Cepat:** Pengguna dapat mengganti bahasa kapan saja melalui modal pemilih tema & bahasa.
+
+### FR-10: Detektor i18n & Missing Translation Keys
+- **FR-10.1 Static Linter CLI (`scripts/detect_i18n_issues.ts`):** Memindai keselarasan key antara `id.ts` dan `en.ts` serta mendeteksi teks hardcoded pada seluruh elemen JSX `<Text>` dan props `placeholder`, `title`, `label`.
+- **FR-10.2 Runtime Missing Key Registry & Visual Highlighter:** Pencatatan otomatis runtime key yang tidak ditemukan, emisi warning console dev, dan mode visual debug highlight `⚠️[missing:key]` yang dapat diaktifkan di menu pengaturan.
+
+### FR-11: Sistem Deep Link & Notification Routing Terpadu
+- **FR-11.1 Skema URL Kustom & Universal Link:** Mendukung `tresno://<route>` dan web path/hash untuk navigasi langsung ke Destiny (`?filter=...`), Chat Room (`chat/:id`), Anchor Call (`anchor/:id`), Topup QRIS (`topup`), Missions (`missions`), Stories (`story/:id`), dan Admin CMS (`admin`).
+- **FR-11.2 Integrasi Klik Notifikasi:** Banner notifikasi in-app dan push notification otomatis mengarahkan pengguna ke layar/modal target melalui properti `actionUrl`.
+- **FR-11.3 Simulator Deep Link:** Panel dev simulator interaktif untuk pengujian cepat rute deep link dan simulasi pengiriman notifikasi dengan actionUrl.
+
+### FR-12: Pengalaman Interaktif Pull-to-Refresh
+- **FR-12.1 Pull-to-Refresh Tab Destiny:** Memasang `RefreshControl` dengan warna aksen tema untuk mengocok rotasi algoritma host (*Anti-Sepi*), sinkronisasi kehadiran live tri-state, pembaruan cerita, feedback suara, dan toast status.
+- **FR-12.2 Pull-to-Refresh Tab Pesan:** Sinkronisasi instan daftar percakapan dan badge belum terbaca.
 
 ---
 
@@ -198,7 +211,10 @@
 | **Missions Center** | ✅ **Selesai** | Modal slide-up dari bawah; klaim hadiah harian & misi pemula menambah saldo koin/kupon seketika. |
 | **Top-up QRIS & Dompet** | ✅ **Selesai** | Pilihan paket koin; simulasi QRIS berhasil; pencatatan double-entry ledger konsisten. |
 | **Penarikan Dana Host** | ✅ **Selesai** | Tombol withdraw memvalidasi minimum 2.000 poin; formulir bank/e-wallet tersimpan rapi. |
-| **Desain, Tema & i18n** | ✅ **Selesai** | 3 mode tema & 4 palet aksen berganti instan; 334+ string terjemahan ID & EN 100% selaras tanpa teks hardcoded. |
+| **Desain, Tema & i18n** | ✅ **Selesai** | 3 mode tema & 4 palet aksen berganti instan; 381+ string terjemahan ID & EN 100% selaras tanpa teks hardcoded. |
+| **i18n & Missing Detector**| ✅ **Selesai** | Static linter CLI (`i18n:check`) memindai parity & teks hardcoded JSX; runtime missing key registry & visual highlight badge aktif. |
+| **Deep Link & Notification**| ✅ **Selesai** | Skema URL `tresno://` & web hash parsing aktif; klik banner notifikasi otomatis routing via actionUrl; simulator tester terpasang. |
+| **Pull-to-Refresh Reaktif**| ✅ **Selesai** | RefreshControl terpasang di Destiny & Messages Tab; memicu kocok algoritma Anti-Sepi, update kehadiran live, cerita, dan audio/toast feedback. |
 | **DRM & Sensor Privasi** | ✅ **Selesai** | Sensor blur 3 detik aktif saat call mulai; deteksi perekaman layar menutup tampilan call. |
 | **Kompilasi & Web Build** | ✅ **Selesai** | `tsc --noEmit` menghasilkan 0 error; Vite web build minified < 800ms. |
 
